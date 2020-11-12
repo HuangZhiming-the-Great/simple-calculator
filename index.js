@@ -15,7 +15,7 @@ class Display extends React.Component {
       React.createElement("p",{
         id:'display',
         className:'display-answer',
-      })
+      },0)
     );
   }
 }
@@ -27,6 +27,7 @@ const initial_store={
   hasDecimal:false,
   newEnterText:"",
   oldNumber:"",
+  oldCalculor:"",
   calculorArray:[],
   numberArray:[]
 };
@@ -64,6 +65,9 @@ class Buttons extends React.Component {
           alert("Warning! The number is to long.\nYou May not get the accurate answer.");
           break;
         }
+        if(display.innerText==="0" && store.newEnterText==="0"){
+          break;
+        }
         display.innerText=store.oldNumber+store.newEnterText;
         break;
       case 'calculor':
@@ -81,9 +85,24 @@ class Buttons extends React.Component {
             display.innerText=store.numberArray[0].toFixed(8);
             break;
           }else{
-            const powerNumber=Math.floor(Math.abs(store.numberArray[0])).toString().length-1;
-            display.innerText=(store.numberArray[0]/10**powerNumber).toFixed(8)+`*10^${powerNumber}`;
-            break;
+            if(Math.abs(store.numberArray[0]) <= 10**12){
+              const powerNumber=Math.floor(Math.abs(store.numberArray[0])).toString().length-1;
+              display.innerText=(store.numberArray[0]/10**powerNumber).toFixed(8)+`*10^${powerNumber}`;
+              break;
+            }else{
+              alert("不要太伤心病狂，它只是一个普通计算机！\n还能不能愉快的玩耍了？！！！\n计算机已重置！");
+              this.setStore({
+                mode:0,
+                action: undefined,
+                hasDecimal:false,
+                newEnterText:"",
+                oldNumber:"",
+                calculorArray:[],
+                numberArray:[]
+              });
+              display.innerText="0";
+              break;
+            }
           }
         }
         display.innerText=store.numberArray[0];
@@ -119,6 +138,12 @@ class NumberButton extends React.Component {
   handleNumber(ancient){
     switch(ancient.store.action){
       case 'number': 
+        if(ancient.store.newEnterText==='0' && ancient.store.oldNumber==='0'){
+          ancient.setStore({
+            oldNumber:""
+          });
+          break;
+        }
         ancient.setStore({
           action:'number',
           oldNumber:ancient.store.oldNumber.concat(ancient.store.newEnterText),
@@ -128,7 +153,8 @@ class NumberButton extends React.Component {
       case 'calculor':
         ancient.setStore({
           action:'number',
-          calculorArray:[...ancient.store.calculorArray,ancient.store.newEnterText],
+          calculorArray:[...ancient.store.calculorArray,ancient.store.oldCalculor+ancient.store.newEnterText],
+          oldCalculor:"",
           newEnterText:this.props.text
         });
         break;
@@ -202,7 +228,8 @@ class DecimalNumberButton extends React.Component {
           ancient.setStore({
             action:'number',
             hasDecimal:true,
-            calculorArray:[...ancient.store.calculorArray,ancient.store.newEnterText],
+            calculorArray:[...ancient.store.calculorArray,ancient.store.oldCalculor+ancient.store.newEnterText],
+            oldCalculor:"",
             newEnterText:this.props.text
           });
           break;
@@ -259,6 +286,7 @@ class CalcButton extends React.Component {
       case 'calculor':
         // If you want, you can add a warning before.
         ancient.setStore({
+          oldCalculor:ancient.store.oldCalculor+ancient.store.newEnterText,
           newEnterText:this.props.text
         });
         break;
@@ -294,6 +322,7 @@ class ClearAllButton extends React.Component {
       hasDecimal:false,
       newEnterText:"",
       oldNumber:"",
+      oldCalculor:"",
       calculorArray:[],
       numberArray:[]
     });
@@ -323,7 +352,16 @@ class  EqualButton extends React.Component {
       if(mode===0){
         let answer=Number.parseFloat(numberArray[0]);
         for(let i=0;i<calculorArray.length;i++){
-          switch(calculorArray[i]){
+          // Wash the calculor.
+          let calculor=calculorArray[i];
+          if(calculor.length===2 && calculor[1]==='-'){
+            calculor=calculor[0];
+            numberArray[i+1]='-'.concat(numberArray[i+1]);
+          }else{
+            calculor=calculor[calculor.length-1];
+          }
+
+          switch(calculor){
             case '+':
               answer+=Number.parseFloat(numberArray[i+1]);
               break;
@@ -363,6 +401,7 @@ class  EqualButton extends React.Component {
           hasDecimal:false,
           newEnterText:"",
           oldNumber:"",
+          oldCalculor:"",
           calculorArray:[],
           numberArray:[]
           },{
@@ -519,7 +558,7 @@ class App extends React.Component {
       },
       
       React.createElement(ClearAllButton,{
-        id:'clean',
+        id:'clear',
         className:'clear-all',
         text:'C'
       }),

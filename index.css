@@ -56,7 +56,7 @@ button {
   align-items: center;
 }
 
-button#clean {
+button#clear {
   height: 8em;
 
   display: flex;
