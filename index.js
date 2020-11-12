@@ -2,6 +2,24 @@
 
 const projectName='';
 
+/* Display class */
+
+class Display extends React.Component {
+  constructor(props){
+    super(props);
+
+  }
+
+  render(){
+    return (
+      React.createElement("p",{
+        id:'display',
+        className:'display-answer',
+      })
+    );
+  }
+}
+
 // the data container of all the buttons,to store the information of all.
 const initial_store={
   mode:0,
@@ -18,6 +36,7 @@ class Buttons extends React.Component {
     super(props);
     this.store=initial_store;
     this.setStore=this.setStore.bind(this);
+    this.showDisplay=this.showDisplay.bind(this);
   }
 
   setStore(newStore){
@@ -33,13 +52,36 @@ class Buttons extends React.Component {
     }
   }
 
+  showDisplay(store){
+    let display=document.getElementById('display');
+    switch(store.action){
+      case 'number':
+        display.innerText=store.oldNumber+store.newEnterText;
+        break;
+      case 'calculor':
+        display.innerText=store.newEnterText;
+        break;
+      case undefined:
+        display.innerText="0";
+        break;
+      case 'equal':
+        display.innerText=store.numberArray[0];
+    }
+  }
+
   render(){
     return (
       React.createElement("button",{
         id:this.props.id,
         className:this.props.className,
         onClick:()=> {
-          return this.props.onClick(this);
+
+          console.log(this.props.text);
+          console.log(this.store);
+
+          this.props.onClick(this);
+
+          this.showDisplay(this.store);
         },
       },this.props.text)
     );
@@ -53,10 +95,6 @@ class NumberButton extends React.Component {
   }
 
   handleNumber(ancient){
-
-    console.log(this.props.text);
-    console.log(ancient.store);
-
     switch(ancient.store.action){
       case 'number': 
         ancient.setStore({
@@ -75,6 +113,7 @@ class NumberButton extends React.Component {
       case 'equal':
         ancient.setStore({
           action:'number',
+          numberArray:[],
           newEnterText:this.props.text
         });
         break;
@@ -145,6 +184,14 @@ class DecimalNumberButton extends React.Component {
             newEnterText:this.props.text
           });
           break;
+        case 'equal':
+          ancient.setStore({
+            action:'number',
+            hasDecimal:true,
+            numberArray:[],
+            newEnterText:this.props.text
+          });
+          break;
         default:
           alert("Warning! You can't enter a decimal in this situation!\npleace check your text.\nthis action was ignored.");
           break;
@@ -181,6 +228,12 @@ class CalcButton extends React.Component {
           newEnterText:this.props.text
         });
         break;
+      case 'equal':
+        ancient.setStore({
+          action:'calculor',
+          newEnterText:this.props.text
+        });
+        break;
       case 'calculor':
         // If you want, you can add a warning before.
         ancient.setStore({
@@ -206,14 +259,22 @@ class CalcButton extends React.Component {
   }
 }
 
-class ClearAll extends React.Component {
+class ClearAllButton extends React.Component {
   constructor(props){
     super(props);
     this.handleClearAll=this.handleClearAll.bind(this);
   }
 
   handleClearAll(ancient){
-    ancient.setStore(initial_store);
+    ancient.setStore({
+      mode:0,
+      action: undefined,
+      hasDecimal:false,
+      newEnterText:"",
+      oldNumber:"",
+      calculorArray:[],
+      numberArray:[]
+    });
   }
 
   render(){
@@ -238,24 +299,24 @@ class  EqualButton extends React.Component {
   getAnswer(numberArray,calculorArray,mode){
     if(numberArray.length==calculorArray.length+1){
       if(mode===0){
-        let answer=numberArray[0];
+        let answer=Number.parseFloat(numberArray[0]);
         for(let i=0;i<calculorArray.length;i++){
           switch(calculorArray[i]){
             case '+':
-              answer+=numberArray[i+1];
+              answer+=Number.parseFloat(numberArray[i+1]);
               break;
             case '-':
-              answer-=numberArray[i+1];
+              answer-=Number.parseFloat(numberArray[i+1]);
               break;
             case '*':
-              answer*=numberArray[i+1];
+              answer*=Number.parseFloat(numberArray[i+1]);
               break;
             case '/':
-              if(numberArray[i+1]===0){
+              if(Number.parseFloat(numberArray[i+1])===0){
                 alert("Wrong! 0 couldm't to be a divider!\nCalculation is over.\nYou may need enter clearAll to re-calculate.");
                 break;
               }
-              answer/=numberArray[i+1];
+              answer/=Number.parseFloat(numberArray[i+1]);
               break;
           }
 
@@ -268,13 +329,21 @@ class  EqualButton extends React.Component {
       }
 
     }
-    return 0;
+
   }
 
   handleEqual(ancient){
     switch(ancient.store.action){
       case 'number':
-        ancient.setStore(Object.assign({},initial_store,{
+        ancient.setStore(Object.assign({},{
+          mode:0,
+          action: undefined,
+          hasDecimal:false,
+          newEnterText:"",
+          oldNumber:"",
+          calculorArray:[],
+          numberArray:[]
+          },{
           action:'equal',
           numberArray:[this.getAnswer([...ancient.store.numberArray,ancient.store.oldNumber.concat(ancient.store.newEnterText)],ancient.store.calculorArray,ancient.store.mode)],
           newEnterText:this.props.text
@@ -291,6 +360,17 @@ class  EqualButton extends React.Component {
         break;
     }
       
+  }
+
+  render(){
+    return (
+      React.createElement(Buttons,{
+        id:this.props.id,
+        className:this.props.className,
+        text:this.props.text,
+        onClick:this.handleEqual
+      })
+    );
   }
 }
 
@@ -389,6 +469,12 @@ class App extends React.Component {
         className:"app"
       },
 
+      React.createElement(Display),
+
+      React.createElement("div",{
+        className:'div-number'
+      },
+
       numberButtonArray,
 
       React.createElement(DecimalNumberButton,{
@@ -397,7 +483,33 @@ class App extends React.Component {
         text:'.'
       }),
 
+      ),
+      
+      React.createElement("div",{
+        className:'div-calculor'
+      },
       calculorButtonArray,
+
+      ),
+      
+      React.createElement('div',{
+        className:'div-control'
+      },
+      
+      React.createElement(ClearAllButton,{
+        id:'clean',
+        className:'clear-all',
+        text:'C'
+      }),
+
+      React.createElement(EqualButton,{
+        id:'equals',
+        className:'equal',
+        text:'='
+      })
+      
+      )
+
       )
     );
   }

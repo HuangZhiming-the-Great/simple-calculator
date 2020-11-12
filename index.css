@@ -1,0 +1,79 @@
+* {
+  margin: 0;
+  padding: 0;
+  background-color: #eee;
+  box-sizing: border-box;
+}
+
+/* Layout Grid */
+
+.app {
+  margin:0 auto;
+  max-width: 20em;
+  display: grid;
+  grid-template-columns: repeat(5,auto);
+  grid-template-rows:repeat(2,auto);
+}
+
+#display {
+  grid-column: 1 / span 5;
+}
+
+.div-number {
+  padding:0.2em;
+  grid-column: 1 / span 3;
+
+  display: grid;
+  grid-template-columns: repeat(3,auto);
+  gap:0.25em 0.25em;
+}
+
+.div-calculor {
+  padding: 0.2em;
+  grid-column: 4 / span 1;
+  display: grid;
+  grid-template-columns: auto;
+  gap: 0.25em;
+}
+
+.div-control {
+  padding: 0.3em 0.2em;
+
+  display: grid;
+  grid-template-rows: repeat(2,auto);
+  gap: 0.3em;
+}
+
+/* Button style */ 
+
+button {
+
+  border:1px solid black;
+  border-radius: 0.25em;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+button#clean {
+  height: 8em;
+
+  display: flex;
+}
+
+button#equals {
+  height: 10em;
+
+  display: flex;
+}
+
+/* Display style */
+
+#display {
+  height: 1.2em;
+  font-size: 3em;
+  border: 2px solid brown;
+  padding: auto 0.5em;
+  text-align: right;
+}
