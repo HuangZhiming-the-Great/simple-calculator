@@ -54,8 +54,16 @@ class Buttons extends React.Component {
 
   showDisplay(store){
     let display=document.getElementById('display');
+    // Set the display class' font size.
+    const width=display.clientWidth;
+    display.style.fontSize=`${width/6}px`;
+    // Show the Strings.
     switch(store.action){
       case 'number':
+        if(store.oldNumber.toString().length>10){
+          alert("Warning! The number is to long.\nYou May not get the accurate answer.");
+          break;
+        }
         display.innerText=store.oldNumber+store.newEnterText;
         break;
       case 'calculor':
@@ -65,7 +73,21 @@ class Buttons extends React.Component {
         display.innerText="0";
         break;
       case 'equal':
+        if(store.numberArray[0].toString().length > 12){
+          // shrink the font size.
+          display.style.fontSize=`${width/10}px`;
+
+          if(Math.abs(store.numberArray[0]) <= 10**6){
+            display.innerText=store.numberArray[0].toFixed(8);
+            break;
+          }else{
+            const powerNumber=Math.floor(Math.abs(store.numberArray[0])).toString().length-1;
+            display.innerText=(store.numberArray[0]/10**powerNumber).toFixed(8)+`*10^${powerNumber}`;
+            break;
+          }
+        }
         display.innerText=store.numberArray[0];
+        break;
     }
   }
 
@@ -507,7 +529,7 @@ class App extends React.Component {
         className:'equal',
         text:'='
       })
-      
+
       )
 
       )
